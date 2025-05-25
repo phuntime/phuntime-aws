@@ -1,27 +1,47 @@
 #!/opt/bin/php
 <?php
 declare(strict_types=1);
+
 require_once __DIR__ . '/phuntime/BlockingHttpClient.php';
 require_once __DIR__ . '/phuntime/PhpFpmProcess.php';
-
+require_once __DIR__ . '/phuntime/FastCgiClient.php';
 
 $lambdaRuntimeApi = $_ENV['AWS_LAMBDA_RUNTIME_API'] ?? null;
 $taskRoot = $_ENV['LAMBDA_TASK_ROOT'] ?? null;
 $memorySize = $_ENV['AWS_LAMBDA_FUNCTION_MEMORY_SIZE'] ?? null;
 
-var_dump($_ENV, $_SERVER);
-
 $httpClient = new BlockingHttpClient();
 $process = new PhpFpmProcess(
-        '/opt/sbin/php-fpm',
+    '/opt/sbin/php-fpm',
     '/opt/php/etc/php-fpm.conf'
 );
+$fcgiClient = new FastCgiClient();
 while (1) {
     $process->start();
-    var_dump($httpClient->request(
+    $event = $httpClient->request(
         'GET',
         sprintf('%s/2018-06-01/runtime/invocation/next', $lambdaRuntimeApi)
-    ));
+    );
 
-    die(1);
+    $requestId = reset($event['headers']['lambda-runtime-aws-request-id']);
+
+    $handlerResponse = $fcgiClient->handle(json_decode($event['response'], true));
+
+    $httpClient->request(
+        'POST',
+        sprintf(
+            '%s/2018-06-01/runtime/invocation/%s/response',
+            $lambdaRuntimeApi,
+            $requestId
+        ),
+        [
+            'body' => json_encode([
+                'statusCode' => $handlerResponse->getStatusCode(),
+                'headers' => $handlerResponse->getHeaders(),
+                'body' => $handlerResponse->getBody()
+            ])
+        ]
+    );
+
+    $process->tick();
 }
