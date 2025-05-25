@@ -65,9 +65,13 @@ $http->on('Request', function (Request $request, Response $response) use ($emula
     $result = curl_exec($curl);
     curl_close($curl);
 
+    $parsedResult = json_decode($result, true);
 
-    //$response->header('Content-Type', 'application/json; charset=utf-8');
-    $response->end($result);
+    $response->status($parsedResult['statusCode']);
+    foreach ($parsedResult['headers'] as $headerKey => $headerValue) {
+        $response->header($headerKey, $headerValue);
+    }
+    $response->end($parsedResult['body']);
 });
 
 $http->start();
