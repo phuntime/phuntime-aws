@@ -14,7 +14,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 printf "[build.sh] Build START\n"
-
+rm -rf ./build
 
 docker build -t="phuntime-lambda-build" \
   --target build \
@@ -24,24 +24,28 @@ docker build -t="phuntime-lambda-build" \
 CONTAINER_ID=$(docker run -it -d phuntime-lambda-build:latest)
 
 printf "[build.sh][debug] Checking PHP version\n"
-docker exec -it "$CONTAINER_ID" /opt/php/bin/php -v
+docker exec -it "$CONTAINER_ID" /opt/bin/php -v
 
-#printf "[build.sh][debug] Checking Swoole version\n"
-#docker exec -it $CONTAINER_ID /opt/php/bin/php -i | grep swoole
+printf "[build.sh][debug] Checking Swoole version\n"
+docker exec -it $CONTAINER_ID /opt/bin/php -i | grep swoole
 
 printf "[build.sh][debug] list installed extensions\n"
-docker exec -it $CONTAINER_ID /opt/php/bin/php -m
+docker exec -it $CONTAINER_ID /opt/bin/php -m
 #
 printf "[build.sh][debug] Copying artifacts to ${output_dir}\n"
 mkdir -p $output_dir/bin
 mkdir -p $output_dir/php
+mkdir -p $output_dir/phuntime
+mkdir -p $output_dir/php/etc
+mkdir -p $output_dir/sbin
 docker cp $CONTAINER_ID:/opt/php/ext $output_dir/php
 docker cp $CONTAINER_ID:/opt/bin/php $output_dir/bin
-docker cp $CONTAINER_ID:/opt/php-fpm $output_dir/bin/php-fpm
+docker cp $CONTAINER_ID:/opt/sbin/php-fpm $output_dir/sbin/php-fpm
 cp bootstrap $output_dir
 #
-#cp php.ini $output_dir/bin
-#cp php-fpm.conf $output_dir/php
+cp -R phuntime $output_dir
+cp php.ini $output_dir/php
+cp php-fpm.conf $output_dir/php/etc/
 #
 #
 #printf "[build.sh][debug] add fpm related things\n"

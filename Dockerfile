@@ -53,7 +53,6 @@ RUN phpize
 RUN ./configure
 RUN make
 RUN make install
-RUN echo "extension=swoole.so" >> ${INI_FILE_LOCATION}
 
 FROM build as runtime
 RUN mkdir -p ~/.aws-lambda-rie \
