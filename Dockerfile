@@ -2,7 +2,7 @@ FROM arm64v8/amazonlinux:2023.3.20240131.0 as build
 
 ARG PHP_VERSION
 ARG BISON_VERSION
-ARG SWOOLE_VERSION=
+ARG SWOOLE_VERSION
 #
 RUN yum update -y
 RUN yum clean all
