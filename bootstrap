@@ -1,0 +1,27 @@
+#!/opt/bin/php
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/phuntime/BlockingHttpClient.php';
+require_once __DIR__ . '/phuntime/PhpFpmProcess.php';
+
+
+$lambdaRuntimeApi = $_ENV['AWS_LAMBDA_RUNTIME_API'] ?? null;
+$taskRoot = $_ENV['LAMBDA_TASK_ROOT'] ?? null;
+$memorySize = $_ENV['AWS_LAMBDA_FUNCTION_MEMORY_SIZE'] ?? null;
+
+var_dump($_ENV, $_SERVER);
+
+$httpClient = new BlockingHttpClient();
+$process = new PhpFpmProcess(
+        '/opt/sbin/php-fpm',
+    '/opt/php/etc/php-fpm.conf'
+);
+while (1) {
+    $process->start();
+    var_dump($httpClient->request(
+        'GET',
+        sprintf('%s/2018-06-01/runtime/invocation/next', $lambdaRuntimeApi)
+    ));
+
+    die(1);
+}

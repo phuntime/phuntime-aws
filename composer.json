@@ -1,0 +1,5 @@
+{
+    "require": {
+        "swoole/ide-helper": "~6.0.2"
+    }
+}
