@@ -39,6 +39,10 @@ class FastCgiClient
                     )
                 );
 
+            foreach ($event['headers'] as $key => $value) {
+                $request->withHeader($key, $value);
+            }
+
             $fcgiResponse = $this
                 ->client
                 ->execute($request);
