@@ -37,6 +37,12 @@ class FastCgiClient
                         $event['requestContext']['http']['path'],
                         $event['rawQueryString'],
                     )
+                )
+                ->withBody(
+                    $this->parseBody(
+                        $event['body'],
+                        $event['isBase64Encoded']
+                    )
                 );
 
             foreach ($event['headers'] as $key => $value) {
@@ -62,5 +68,17 @@ class FastCgiClient
         }
 
         return sprintf('%s?%s', $path, $query);
+    }
+
+    private function parseBody(
+        string $body,
+        bool $isBase64Encoded,
+    )
+    {
+        if($isBase64Encoded) {
+            return base64_decode($body);
+        }
+
+        return $body;
     }
 }
