@@ -32,18 +32,25 @@ class FastCgiClient
                 ->withServerProtocol($event['requestContext']['http']['protocol'])
                 ->withGatewayInterface('CGI/1.1')
                 ->withScriptName('index.php')
+                ->withQueryString($event['rawQueryString'])
                 ->withRequestUri(
                     $this->buildRequestUriParam(
                         $event['requestContext']['http']['path'],
                         $event['rawQueryString'],
                     )
-                )
-                ->withBody(
-                    $this->parseBody(
-                        $event['body'],
-                        $event['isBase64Encoded']
-                    )
                 );
+
+            if(isset($event['body']) && is_string($event['body'])) {
+                $bodyResult = $this->parseBody(
+                    $event['body'],
+                    $event['isBase64Encoded']
+                );
+
+
+                $request->withBody(
+                   $bodyResult
+                );
+            }
 
             foreach ($event['headers'] as $key => $value) {
                 $request->withHeader($key, $value);
