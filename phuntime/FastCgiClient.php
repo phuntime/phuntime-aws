@@ -28,9 +28,16 @@ class FastCgiClient
         swoole_co_run(function () use (&$fcgiResponse, $event) {
             $request = new \Swoole\FastCGI\HttpRequest();
             $request->withMethod($event['requestContext']['http']['method'])
-                ->withDocumentRoot('/var/task')
                 ->withScriptFilename('/var/task/index.php')
-                ->withParam('SCRIPT_NAME', 'index.php');
+                ->withServerProtocol($event['requestContext']['http']['protocol'])
+                ->withGatewayInterface('CGI/1.1')
+                ->withParam('SCRIPT_NAME', 'index.php')
+                ->withRequestUri(
+                    $this->buildRequestUriParam(
+                        $event['requestContext']['http']['path'],
+                        $event['rawQueryString'],
+                    )
+                );
 
             $fcgiResponse = $this
                 ->client
@@ -38,5 +45,18 @@ class FastCgiClient
         });
 
         return $fcgiResponse;
+    }
+
+
+    private function buildRequestUriParam(
+        string $path,
+        string $query,
+    )
+    {
+        if(strlen($query) == 0) {
+            return $path;
+        }
+
+        return sprintf('%s?%s', $path, $query);
     }
 }
