@@ -31,7 +31,7 @@ class FastCgiClient
                 ->withScriptFilename('/var/task/index.php')
                 ->withServerProtocol($event['requestContext']['http']['protocol'])
                 ->withGatewayInterface('CGI/1.1')
-                ->withParam('SCRIPT_NAME', 'index.php')
+                ->withScriptName('index.php')
                 ->withRequestUri(
                     $this->buildRequestUriParam(
                         $event['requestContext']['http']['path'],
