@@ -33,6 +33,7 @@ class FastCgiClient
                 ->withGatewayInterface('CGI/1.1')
                 ->withScriptName('index.php')
                 ->withQueryString($event['rawQueryString'])
+                ->withParam('PATH_INFO', $event['rawPath'])
                 ->withRequestUri(
                     $this->buildRequestUriParam(
                         $event['requestContext']['http']['path'],
