@@ -54,6 +54,10 @@ class FastCgiClient
 
             foreach ($event['headers'] as $key => $value) {
                 $request->withHeader($key, $value);
+
+                if(strtolower($key) == 'content-type') {
+                    $request->withContentType($value);
+                }
             }
 
             $fcgiResponse = $this
